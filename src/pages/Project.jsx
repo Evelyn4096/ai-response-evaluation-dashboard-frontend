@@ -1,42 +1,87 @@
-import { useEffect, useRef, useState } from "react";
-import Chart from "chart.js/auto";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Tooltip,
+  Legend
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
+import { Bar, Line, Doughnut, Scatter } from "react-chartjs-2";
 import WebSocketBox from "../components/WebSocketBox";
 import "./Project.css";
 
-// === Auto select local / Render backend ===
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "https://four020project.onrender.com";
 
+/* ============================
+   SMALL INLINE COMPONENTS
+============================ */
+function KPICard({ title, value }) {
+  return (
+    <div className="kpi-card">
+      <h3>{title}</h3>
+      <p>{value}</p>
+    </div>
+  );
+}
+
+function ControlButtons({ onQuick, onStart, onPause, onResume, onReset }) {
+  return (
+    <div className="button-row">
+      <button className="quick-btn" onClick={onQuick}>
+        Quick
+      </button>
+      <button className="start-btn" onClick={onStart}>
+        Start
+      </button>
+      <button className="pause-btn" onClick={onPause}>
+        Pause
+      </button>
+      <button className="resume-btn" onClick={onResume}>
+        Resume
+      </button>
+      <button className="reset-btn" onClick={onReset}>
+        Reset
+      </button>
+    </div>
+  );
+}
+
+/* ============================
+   MAIN PAGE COMPONENT
+============================ */
 export default function Project() {
   const [stats, setStats] = useState([]);
   const [status, setStatus] = useState("");
 
-  // Chart refs
-  const accuracyRef = useRef(null);
-  const timeRef = useRef(null);
-  const correctWrongRef = useRef(null);
-  const domainShareRef = useRef(null);
-  const scatterRef = useRef(null);
-
-  // Chart instances
-  const accuracyChart = useRef(null);
-  const timeChart = useRef(null);
-  const correctWrongChart = useRef(null);
-  const domainShareChart = useRef(null);
-  const scatterChart = useRef(null);
-
-  // ----------------------------
-  // Fetch analysis stats
-  // ----------------------------
+  /* ----------------------------
+     Fetch Stats
+  ---------------------------- */
   async function fetchStats() {
     try {
       const res = await fetch(`${API_BASE}/api/analysis`);
       const data = await res.json();
       setStats(data);
     } catch (err) {
-      console.error("Error fetching analysis:", err);
+      console.error("Error fetching stats", err);
     }
   }
 
@@ -44,240 +89,206 @@ export default function Project() {
     fetchStats();
   }, []);
 
-  // ----------------------------
-  // KPI values
-  // ----------------------------
-  const totalQuestions = stats.reduce((sum, s) => sum + (s.count || 0), 0);
+  /* ----------------------------
+     KPI VALUES (useMemo)
+  ---------------------------- */
+  const totalQuestions = useMemo(
+    () => stats.reduce((sum, s) => sum + (s.count || 0), 0),
+    [stats]
+  );
 
-  const overallAccuracy =
-    stats.length === 0
-      ? 0
-      : stats.reduce((sum, s) => sum + s.accuracy * s.count, 0) /
-          totalQuestions || 0;
-
-  const fastestDomain =
-    stats.length === 0
-      ? null
-      : stats.reduce(
-          (best, s) =>
-            !best || s.avgResponseTime < best.avgResponseTime ? s : best,
-          null
-        );
-
-  // ----------------------------
-  // Render Charts on stats change
-  // ----------------------------
-  useEffect(() => {
-    if (stats.length === 0) return;
-
-    const domains = stats.map((s) => s.domain);
-    const accuracies = stats.map((s) => s.accuracy);
-    const responseTimes = stats.map((s) => s.avgResponseTime);
-    const counts = stats.map((s) => s.count || 0);
-    const correctCounts = stats.map((s) =>
-      Math.round(s.accuracy * (s.count || 0))
+  const overallAccuracy = useMemo(() => {
+    if (!stats.length) return 0;
+    return (
+      stats.reduce(
+        (sum, s) => sum + s.accuracy * (s.count || 0),
+        0
+      ) / totalQuestions
     );
-    const incorrectCounts = stats.map(
-      (s, i) => (s.count || 0) - correctCounts[i]
+  }, [stats, totalQuestions]);
+
+  const fastestDomain = useMemo(() => {
+    if (!stats.length) return null;
+    return stats.reduce(
+      (best, s) =>
+        !best || s.avgResponseTime < best.avgResponseTime ? s : best,
+      null
     );
-
-    // Destroy old charts
-    if (accuracyChart.current) accuracyChart.current.destroy();
-    if (timeChart.current) timeChart.current.destroy();
-    if (correctWrongChart.current) correctWrongChart.current.destroy();
-    if (domainShareChart.current) domainShareChart.current.destroy();
-    if (scatterChart.current) scatterChart.current.destroy();
-
-    // Accuracy Bar
-    accuracyChart.current = new Chart(accuracyRef.current, {
-      type: "bar",
-      data: {
-        labels: domains,
-        datasets: [{ label: "Accuracy", data: accuracies }],
-      },
-      options: { scales: { y: { beginAtZero: true, max: 1 } } },
-    });
-
-    // Response Time Line
-    timeChart.current = new Chart(timeRef.current, {
-      type: "line",
-      data: {
-        labels: domains,
-        datasets: [
-          { label: "Avg Response Time (ms)", data: responseTimes, tension: 0.25 },
-        ],
-      },
-      options: { scales: { y: { beginAtZero: true } } },
-    });
-
-    // Correct vs Incorrect
-    correctWrongChart.current = new Chart(correctWrongRef.current, {
-      type: "bar",
-      data: {
-        labels: domains,
-        datasets: [
-          { label: "Correct", data: correctCounts },
-          { label: "Incorrect", data: incorrectCounts },
-        ],
-      },
-      options: {
-        responsive: true,
-        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
-      },
-    });
-
-    // Domain distribution
-    domainShareChart.current = new Chart(domainShareRef.current, {
-      type: "doughnut",
-      data: {
-        labels: domains,
-        datasets: [{ label: "Question Count", data: counts }],
-      },
-    });
-
-    // Scatter (accuracy vs response time)
-    scatterChart.current = new Chart(scatterRef.current, {
-      type: "scatter",
-      data: {
-        datasets: stats.map((s) => ({
-          label: s.domain,
-          data: [{ x: s.avgResponseTime, y: s.accuracy }],
-        })),
-      },
-      options: {
-        scales: {
-          x: { title: { display: true, text: "Avg Response Time (ms)" } },
-          y: { max: 1, beginAtZero: true },
-        },
-      },
-    });
   }, [stats]);
 
-  // ----------------------------
-  // Backend Control Buttons
-  // ----------------------------
-  async function startEvaluation() {
-    setStatus("Starting evaluation...");
+  /* ----------------------------
+     CHART DATA GENERATORS
+  ---------------------------- */
+  const accuracyData = useMemo(
+    () => ({
+      labels: stats.map((s) => s.domain),
+      datasets: [
+        {
+          label: "Accuracy",
+          data: stats.map((s) => s.accuracy),
+          backgroundColor: "#4e79ff"
+        }
+      ]
+    }),
+    [stats]
+  );
+
+  const timeData = useMemo(
+    () => ({
+      labels: stats.map((s) => s.domain),
+      datasets: [
+        {
+          label: "Avg Response Time (ms)",
+          data: stats.map((s) => s.avgResponseTime),
+          borderColor: "#ff6c4e",
+          backgroundColor: "rgba(255,108,78,0.3)",
+          tension: 0.25
+        }
+      ]
+    }),
+    [stats]
+  );
+
+  const correctWrongData = useMemo(() => {
+    const counts = stats.map((s) => s.count || 0);
+    const correct = stats.map((s, i) =>
+      Math.round(s.accuracy * counts[i])
+    );
+    const incorrect = stats.map((s, i) => counts[i] - correct[i]);
+
+    return {
+      labels: stats.map((s) => s.domain),
+      datasets: [
+        {
+          label: "Correct",
+          data: correct,
+          backgroundColor: "#28a745"
+        },
+        {
+          label: "Incorrect",
+          data: incorrect,
+          backgroundColor: "#dc3545"
+        }
+      ]
+    };
+  }, [stats]);
+
+  const domainShareData = useMemo(
+    () => ({
+      labels: stats.map((s) => s.domain),
+      datasets: [
+        {
+          label: "Question Count",
+          data: stats.map((s) => s.count),
+          backgroundColor: ["#4e79ff", "#ff6c4e", "#8e44ad", "#28a745"]
+        }
+      ]
+    }),
+    [stats]
+  );
+
+  const scatterData = useMemo(
+    () => ({
+      datasets: stats.map((s) => ({
+        label: s.domain,
+        data: [{ x: s.avgResponseTime, y: s.accuracy }],
+        backgroundColor: "#5561d4"
+      }))
+    }),
+    [stats]
+  );
+
+  /* ----------------------------
+     CONTROL BUTTON ACTIONS
+  ---------------------------- */
+  const POST = async (path) => {
     try {
-      const res = await fetch(`${API_BASE}/api/evaluations/start`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: "POST"
       });
       const data = await res.json();
       setStatus(data.status);
-    } catch {
+      return data;
+    } catch (error) {
       setStatus("Error: backend unreachable.");
     }
-  }
-  
-  async function quickEvaluation() {
-  setStatus("Starting quick evaluation...");
-  try {
-    const res = await fetch(`${API_BASE}/api/evaluations/quick`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    setStatus(data.status);
-  } catch {
-    setStatus("Error: backend unreachable.");
-  }
-}
+  };
 
-  async function pauseEvaluation() {
-    const res = await fetch(`${API_BASE}/api/evaluations/pause`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    setStatus(data.status);
-  }
+  const onQuick = () => POST("/api/evaluations/quick");
+  const onStart = () => POST("/api/evaluations/start");
+  const onPause = () => POST("/api/evaluations/pause");
+  const onResume = () => POST("/api/evaluations/resume");
+  const onReset = async () => {
+    await POST("/api/evaluations/reset");
+    await fetchStats();
+  };
 
-  async function resumeEvaluation() {
-    const res = await fetch(`${API_BASE}/api/evaluations/resume`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    setStatus(data.status);
-  }
-
-  async function resetEvaluation() {
-    setStatus("Resetting...");
-    const res = await fetch(`${API_BASE}/api/evaluations/reset`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    setStatus(data.status);
-
-    await fetchStats(); // refresh charts
-  }
-
-  // ----------------------------
-
+  /* ----------------------------
+     RENDER UI
+  ---------------------------- */
   return (
     <div className="project-page">
       <h1>Gemini Evaluation Dashboard</h1>
 
       {/* KPI SUMMARY */}
       <div className="kpi-row">
-        <div className="kpi-card">
-          <h3>Total Questions</h3>
-          <p>{totalQuestions}</p>
-        </div>
-        <div className="kpi-card">
-          <h3>Overall Accuracy</h3>
-          <p>{(overallAccuracy * 100).toFixed(1)}%</p>
-        </div>
-        <div className="kpi-card">
-          <h3>Fastest Domain</h3>
-          <p>
-            {fastestDomain
+        <KPICard title="Total Questions" value={totalQuestions} />
+        <KPICard
+          title="Overall Accuracy"
+          value={(overallAccuracy * 100).toFixed(1) + "%"}
+        />
+        <KPICard
+          title="Fastest Domain"
+          value={
+            fastestDomain
               ? `${fastestDomain.domain} (${Math.round(
                   fastestDomain.avgResponseTime
                 )} ms)`
-              : "—"}
-          </p>
-        </div>
+              : "—"
+          }
+        />
       </div>
 
-      {/* BUTTONS */}
-      <div className="button-row">
-        <button className="quick-btn" onClick={quickEvaluation}>Quick</button>
-        <button className="start-btn" onClick={startEvaluation}>Start</button>
-        <button className="pause-btn" onClick={pauseEvaluation}>Pause</button>
-        <button className="resume-btn" onClick={resumeEvaluation}>Resume</button>
-        <button className="reset-btn" onClick={resetEvaluation}>Reset</button>
-      </div>
-
+      {/* CONTROL BUTTONS */}
+      <ControlButtons
+        onQuick={onQuick}
+        onStart={onStart}
+        onPause={onPause}
+        onResume={onResume}
+        onReset={onReset}
+      />
       <p className="status-text">{status}</p>
 
-      {/* WebSocket Real-time Log */}
+      {/* REAL-TIME LOG */}
       <h2>Live Evaluation Progress</h2>
       <WebSocketBox />
 
+      {/* CHARTS */}
       <h2>Results</h2>
-
       <div className="dashboard-grid">
         <div className="chart-section">
           <h3>Accuracy per Domain</h3>
-          <canvas ref={accuracyRef}></canvas>
+          <Bar data={accuracyData} />
         </div>
 
         <div className="chart-section">
-          <h3>Avg Response Time per Domain</h3>
-          <canvas ref={timeRef}></canvas>
+          <h3>Avg Response Time</h3>
+          <Line data={timeData} />
         </div>
 
         <div className="chart-section">
           <h3>Correct vs Incorrect</h3>
-          <canvas ref={correctWrongRef}></canvas>
+          <Bar data={correctWrongData} />
         </div>
 
         <div className="chart-section">
           <h3>Question Distribution</h3>
-          <canvas ref={domainShareRef}></canvas>
+          <Doughnut data={domainShareData} />
         </div>
 
         <div className="chart-section">
           <h3>Accuracy vs Response Time</h3>
-          <canvas ref={scatterRef}></canvas>
+          <Scatter data={scatterData} />
         </div>
       </div>
 

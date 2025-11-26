@@ -19,6 +19,17 @@ function CV() {
           and cloud platforms such as Azure and Snowflake. I also hold certifications including the Google Data
           Analytics Professional Certificate and the Microsoft Power BI Data Analyst Associate (PL-300).
         </p>
+      <h2>Tianzhuo li</h2>
+        <p>I’m an Information Technology student at York University with a strong focus on full-stack development,
+  system design, and AI-driven applications. I enjoy building practical and user-centered tools, from
+  evaluation platforms powered by real-time data to interactive game systems and cloud-based services.</p>
+        
+        <p>
+  <strong>Technical Background:</strong> Experienced with Python, Java, JavaScript/Node.js, React, MongoDB,
+  Express, and cloud platforms such as Render and Cloudflare. I also work extensively with systems design,
+  REST APIs, WebSockets, and machine-learning model integration for applied projects in cybersecurity and 
+  automation.
+</p>
 
         <button
           onClick={() => window.open("/CV.pdf", "_blank")}
