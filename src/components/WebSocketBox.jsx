@@ -8,38 +8,67 @@ export default function WebSocketBox() {
   const boxRef = useRef(null);
 
   useEffect(() => {
-    // === ✅ 自动切换本地 / 线上 WebSocket URL ===
     const WS_URL =
-    window.location.hostname === "localhost"
-       ? "ws://localhost:3000/ws"
-       : "wss://four020project.onrender.com/ws";
+      window.location.hostname === "localhost"
+        ? "ws://localhost:5000/ws"
+        : "wss://four020project.onrender.com/ws";
+
     const ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
-      setMessages((prev) => [...prev, "📡 WebSocket connected"]);
+      setMessages(prev => [...prev, "📡 WebSocket connected"]);
     };
 
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
 
-        if (msg.status === "done") {
-          setMessages((prev) => [...prev, "✅ Evaluation finished"]);
-        } else {
-          setMessages((prev) => [
+        // === Handle control messages ===
+        if (msg.status) {
+          switch (msg.status) {
+            case "paused":
+              setMessages(prev => [...prev, "⏸ Evaluation Paused"]);
+              return;
+
+            case "resumed":
+              setMessages(prev => [...prev, "▶ Evaluation Resumed"]);
+              return;
+
+            case "stopped":
+              setMessages(prev => [...prev, "🛑 Evaluation Stopped"]);
+              return;
+
+            case "reset":
+              // 💥 Clear log on reset
+              setMessages([]);
+              return;
+
+            case "reset-complete":
+              setMessages(prev => [...prev, "🔄 Reset Complete"]);
+              return;
+
+            case "done":
+              setMessages(prev => [...prev, "✅ Evaluation Finished"]);
+              return;
+          }
+        }
+
+        // --- Normal evaluation message ---
+        if (msg.domain && msg.answer != null) {
+          setMessages(prev => [
             ...prev,
-            `📘 ${msg.domain}: "${msg.question}" → ${
-              msg.answer
-            } (${msg.responseTime} ms)`
+            `📘 ${msg.domain}: "${msg.question}" → ${msg.answer} (${msg.responseTime} ms)`
           ]);
         }
+
       } catch (err) {
         console.error("Invalid WS message:", err);
+        setMessages(prev => [...prev, "❌ Error parsing message"]);
       }
     };
 
     ws.onclose = () => {
-      setMessages((prev) => [...prev, "🔌 WebSocket disconnected"]);
+      setMessages(prev => [...prev, "🔌 WebSocket disconnected"]);
     };
 
     return () => ws.close();
@@ -57,9 +86,7 @@ export default function WebSocketBox() {
       <h3>Live Evaluation Log</h3>
       <div className="ws-box" ref={boxRef}>
         {messages.map((m, i) => (
-          <div key={i} className="ws-line">
-            {m}
-          </div>
+          <div key={i} className="ws-line">{m}</div>
         ))}
       </div>
     </div>

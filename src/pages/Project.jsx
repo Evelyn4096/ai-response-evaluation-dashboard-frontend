@@ -6,14 +6,14 @@ import "./Project.css";
 // === Auto select local / Render backend ===
 const API_BASE =
   window.location.hostname === "localhost"
-    ? "http://localhost:3000"
+    ? "http://localhost:5000"
     : "https://four020project.onrender.com";
 
 export default function Project() {
   const [stats, setStats] = useState([]);
   const [status, setStatus] = useState("");
 
-  // Chart canvas refs
+  // Chart refs
   const accuracyRef = useRef(null);
   const timeRef = useRef(null);
   const correctWrongRef = useRef(null);
@@ -65,7 +65,7 @@ export default function Project() {
         );
 
   // ----------------------------
-  // Render Charts When stats Change
+  // Render Charts on stats change
   // ----------------------------
   useEffect(() => {
     if (stats.length === 0) return;
@@ -88,44 +88,29 @@ export default function Project() {
     if (domainShareChart.current) domainShareChart.current.destroy();
     if (scatterChart.current) scatterChart.current.destroy();
 
+    // Accuracy Bar
     accuracyChart.current = new Chart(accuracyRef.current, {
       type: "bar",
       data: {
         labels: domains,
-        datasets: [
-          {
-            label: "Accuracy (0–1)",
-            data: accuracies,
-          },
-        ],
+        datasets: [{ label: "Accuracy", data: accuracies }],
       },
-      options: {
-        scales: {
-          y: { beginAtZero: true, max: 1 },
-        },
-      },
+      options: { scales: { y: { beginAtZero: true, max: 1 } } },
     });
 
+    // Response Time Line
     timeChart.current = new Chart(timeRef.current, {
       type: "line",
       data: {
         labels: domains,
         datasets: [
-          {
-            label: "Avg Response Time (ms)",
-            data: responseTimes,
-            borderWidth: 2,
-            tension: 0.25,
-          },
+          { label: "Avg Response Time (ms)", data: responseTimes, tension: 0.25 },
         ],
       },
-      options: {
-        scales: {
-          y: { beginAtZero: true },
-        },
-      },
+      options: { scales: { y: { beginAtZero: true } } },
     });
 
+    // Correct vs Incorrect
     correctWrongChart.current = new Chart(correctWrongRef.current, {
       type: "bar",
       data: {
@@ -137,26 +122,20 @@ export default function Project() {
       },
       options: {
         responsive: true,
-        scales: {
-          x: { stacked: true },
-          y: { beginAtZero: true, stacked: true },
-        },
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
       },
     });
 
+    // Domain distribution
     domainShareChart.current = new Chart(domainShareRef.current, {
       type: "doughnut",
       data: {
         labels: domains,
-        datasets: [
-          {
-            label: "Question Count",
-            data: counts,
-          },
-        ],
+        datasets: [{ label: "Question Count", data: counts }],
       },
     });
 
+    // Scatter (accuracy vs response time)
     scatterChart.current = new Chart(scatterRef.current, {
       type: "scatter",
       data: {
@@ -167,42 +146,76 @@ export default function Project() {
       },
       options: {
         scales: {
-          x: {
-            title: { display: true, text: "Avg Response Time (ms)" },
-            beginAtZero: true,
-          },
-          y: {
-            title: { display: true, text: "Accuracy (0–1)" },
-            beginAtZero: true,
-            max: 1,
-          },
+          x: { title: { display: true, text: "Avg Response Time (ms)" } },
+          y: { max: 1, beginAtZero: true },
         },
       },
     });
   }, [stats]);
 
   // ----------------------------
-  // Start Evaluation (POST)
+  // Backend Control Buttons
   // ----------------------------
   async function startEvaluation() {
     setStatus("Starting evaluation...");
-
     try {
       const res = await fetch(`${API_BASE}/api/evaluations/start`, {
         method: "POST",
       });
       const data = await res.json();
-      setStatus(data.status || "Evaluation started.");
-    } catch (err) {
-      console.error(err);
+      setStatus(data.status);
+    } catch {
       setStatus("Error: backend unreachable.");
     }
   }
+  
+  async function quickEvaluation() {
+  setStatus("Starting quick evaluation...");
+  try {
+    const res = await fetch(`${API_BASE}/api/evaluations/quick`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setStatus(data.status);
+  } catch {
+    setStatus("Error: backend unreachable.");
+  }
+}
+
+  async function pauseEvaluation() {
+    const res = await fetch(`${API_BASE}/api/evaluations/pause`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setStatus(data.status);
+  }
+
+  async function resumeEvaluation() {
+    const res = await fetch(`${API_BASE}/api/evaluations/resume`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setStatus(data.status);
+  }
+
+  async function resetEvaluation() {
+    setStatus("Resetting...");
+    const res = await fetch(`${API_BASE}/api/evaluations/reset`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setStatus(data.status);
+
+    await fetchStats(); // refresh charts
+  }
+
+  // ----------------------------
 
   return (
     <div className="project-page">
       <h1>Gemini Evaluation Dashboard</h1>
 
+      {/* KPI SUMMARY */}
       <div className="kpi-row">
         <div className="kpi-card">
           <h3>Total Questions</h3>
@@ -224,11 +237,18 @@ export default function Project() {
         </div>
       </div>
 
-      <button className="start-btn" onClick={startEvaluation}>
-        Start Evaluation
-      </button>
+      {/* BUTTONS */}
+      <div className="button-row">
+        <button className="quick-btn" onClick={quickEvaluation}>Quick</button>
+        <button className="start-btn" onClick={startEvaluation}>Start</button>
+        <button className="pause-btn" onClick={pauseEvaluation}>Pause</button>
+        <button className="resume-btn" onClick={resumeEvaluation}>Resume</button>
+        <button className="reset-btn" onClick={resetEvaluation}>Reset</button>
+      </div>
+
       <p className="status-text">{status}</p>
 
+      {/* WebSocket Real-time Log */}
       <h2>Live Evaluation Progress</h2>
       <WebSocketBox />
 
@@ -237,27 +257,27 @@ export default function Project() {
       <div className="dashboard-grid">
         <div className="chart-section">
           <h3>Accuracy per Domain</h3>
-          <canvas ref={accuracyRef} height={240}></canvas>
+          <canvas ref={accuracyRef}></canvas>
         </div>
 
         <div className="chart-section">
           <h3>Avg Response Time per Domain</h3>
-          <canvas ref={timeRef} height={240}></canvas>
+          <canvas ref={timeRef}></canvas>
         </div>
 
         <div className="chart-section">
-          <h3>Correct vs Incorrect per Domain</h3>
-          <canvas ref={correctWrongRef} height={260}></canvas>
+          <h3>Correct vs Incorrect</h3>
+          <canvas ref={correctWrongRef}></canvas>
         </div>
 
         <div className="chart-section">
-          <h3>Question Distribution by Domain</h3>
-          <canvas ref={domainShareRef} height={260}></canvas>
+          <h3>Question Distribution</h3>
+          <canvas ref={domainShareRef}></canvas>
         </div>
 
         <div className="chart-section">
           <h3>Accuracy vs Response Time</h3>
-          <canvas ref={scatterRef} height={260}></canvas>
+          <canvas ref={scatterRef}></canvas>
         </div>
       </div>
 
