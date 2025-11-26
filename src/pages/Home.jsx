@@ -13,7 +13,7 @@ export default function Home() {
         <p>
           This portfolio presents a fully customized multi-page website designed for the 
           course project. It integrates modern front-end development with a backend-driven 
-          AI evaluation system. The goal is to measure ChatGPT’s accuracy and response 
+          AI evaluation system. The goal is to measure Gemini’s accuracy and response 
           efficiency across three academic domains: <strong>History</strong>, 
           <strong> Social Science</strong>, and <strong>Computer Security</strong>.
         </p>
@@ -32,7 +32,7 @@ export default function Home() {
         <p>
           This project was designed to meet the course requirements while showcasing 
           advanced concepts in web development and AI integration. The system performs 
-          automated evaluation by sending dataset questions to the ChatGPT API, storing 
+          automated evaluation by sending dataset questions to the Gemini, storing 
           results in MongoDB, and analyzing the model’s overall performance.
         </p>
 
@@ -42,7 +42,7 @@ export default function Home() {
           <li>✓ Interactive animated assistant character</li>
           <li>✓ Express.js middleware & sample API endpoint</li>
           <li>✓ Real-time server communication via WebSocket</li>
-          <li>✓ Evaluation dashboard using Chart.js or D3.js</li>
+          <li>✓ Evaluation dashboard using Chart.js </li>
           <li>✓ Fully responsive and professional UI design</li>
         </ul>
       </div>
@@ -50,7 +50,7 @@ export default function Home() {
       {/* CTA */}
       <div className="cta-section">
         <a href="#project" className="cta-button">
-          Explore the ChatGPT Evaluation →
+          Explore the Gemini Evaluation →
         </a>
       </div>
     </section>

@@ -56,3 +56,37 @@ canvas {
   margin: auto;
   max-width: 100%;
 }
+
+.kpi-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.kpi-card {
+  flex: 1 1 180px;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f6f7fb;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.kpi-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.kpi-card p {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}

@@ -4,7 +4,7 @@ import "./Assistant.css";
 export default function Assistant() {
   const tips = [
     "Welcome! I'm your guide for this portfolio.",
-    "This project evaluates ChatGPT's accuracy and speed.",
+    "This project evaluates Gemini's accuracy and speed.",
     "Datasets include History, Social Science, and Computer Security.",
     "Try navigating using the bar above!",
     "Real-time updates are powered by WebSockets.",
