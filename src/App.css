@@ -1,42 +1,253 @@
-#root {
-  max-width: 1280px;
+/* ============================
+   GLOBAL FONT & COLOR SYSTEM
+   ============================ */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Lato", sans-serif;
+  background-color: #fafafa;
+  color: #333;
+}
+
+:root {
+  --primary: #3f51b5;
+  --primary-dark: #2c3e9e;
+  --accent: #ff9800;
+  --accent-dark: #e68900;
+  --light-bg: #ffffff;
+  --text-dark: #222;
+  --text-light: #666;
+  --border-light: #ddd;
+}
+
+
+/* ============================
+   NAVIGATION BAR
+   ============================ */
+
+.navbar {
+  width: 100%;
+  background: var(--primary);
+  padding: 12px 30px;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.navbar a:hover {
+  color: var(--accent);
+}
+
+
+/* ============================
+   MAIN CONTENT
+   ============================ */
+
+.main-content {
+  padding: 40px 30px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
+}
+
+
+/* ============================
+   SECTIONS
+   ============================ */
+
+section {
+  margin-bottom: 50px;
+}
+
+section h1,
+section h2 {
+  color: var(--text-dark);
+}
+
+section h1 {
+  font-size: 2.3rem;
+}
+
+section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 15px;
+}
+
+section p {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: var(--text-light);
+}
+
+
+/* ============================
+   CTA Button
+   ============================ */
+
+.cta-button {
+  display: inline-block;
+  margin-top: 20px;
+  background: var(--primary);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.cta-button:hover {
+  background: var(--primary-dark);
+}
+
+
+/* ============================
+   HOME PAGE SPECIAL STYLES
+   ============================ */
+
+.home-header {
   text-align: center;
+  margin-bottom: 35px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+
+/* ============================
+   ASSISTANT BUBBLE
+   ============================ */
+
+.assistant-bubble {
+  position: fixed;
+  bottom: 25px;
+  right: 30px;
+  background: var(--primary);
+  color: white;
+  padding: 15px 18px;
+  border-radius: 12px;
+  max-width: 250px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+
+/* ============================
+   RESULT DASHBOARD AREA
+   ============================ */
+
+.result-card {
+  background: var(--light-bg);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.chart-box {
+  padding: 15px;
+  background: var(--light-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+
+/* ============================
+   MEDIA QUERIES
+   ============================ */
+
+@media (max-width: 700px) {
+  .navbar ul {
+    gap: 15px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .main-content {
+    padding: 25px;
+  }
+
+  .assistant-bubble {
+    right: 15px;
+    bottom: 15px;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+
+/* ============================
+   (IMPORT OF YOUR ORIGINAL FILE)
+   from stylesheet.css
+   ============================ */
+
+a {
+  color: #1772d0;
+  text-decoration: none;
 }
 
-.card {
-  padding: 2em;
+a:hover {
+  color: #f09228;
 }
 
-.read-the-docs {
-  color: #888;
+strong {
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 1.3em;
+}
+
+p {
+  font-size: 1.03em;
+}
+
+.highlight {
+  background-color: #ffffd0;
+}
+
+.name {
+  display: block;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.one {
+  width: 160px;
+  display: inline-block;
+}
+.one:hover {
+  width: 170px;
+}
+
+.two {
+  width: 160px;
+  display: none;
+}
+.one:hover + .two {
+  display: inline-block;
+  width: 170px;
 }

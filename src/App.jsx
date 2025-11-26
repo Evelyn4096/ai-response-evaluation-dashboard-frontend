@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+import Home from "./pages/Home";
+import CV from "./pages/CV";
+import Project from "./pages/Project";
+import Assistant from "./components/Assistant";
+
+export default function App() {
+  const [route, setRoute] = useState(window.location.hash);
+
+  const routes = {
+    "": <Home />,
+    "#": <Home />,
+    "#home": <Home />,
+    "#cv": <CV />,
+    "#project": <Project />,
+  };
+
+  useEffect(() => {
+    const handler = () => setRoute(window.location.hash);
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
+  const page = routes[route] || <Home />;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app-container">
 
-export default App
+      {/* Navigation */}
+      <nav className="navbar">
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#cv">CV</a></li>
+          <li><a href="#project">Project</a></li>
+        </ul>
+      </nav>
+
+      {/* Main content */}
+      <main className="main-content">
+        {page}
+      </main>
+
+      {/* Optional Assistant */}
+      <Assistant />
+    </div>
+  );
+}
