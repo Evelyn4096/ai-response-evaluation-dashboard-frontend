@@ -232,6 +232,28 @@ export default function Project() {
         </div>
       </div>
 
+      {/* KPI SUMMARY */}
+      <div className="kpi-row">
+        <div className="kpi-card">
+          <h3>Total Questions</h3>
+          <p>{totalQuestions}</p>
+        </div>
+        <div className="kpi-card">
+          <h3>Overall Accuracy</h3>
+          <p>{(overallAccuracy * 100).toFixed(1)}%</p>
+        </div>
+        <div className="kpi-card">
+          <h3>Fastest Domain</h3>
+          <p>
+            {fastestDomain
+              ? `${fastestDomain.domain} (${Math.round(
+                  fastestDomain.avgResponseTime
+                )} ms)`
+              : "—"}
+          </p>
+        </div>
+      </div>
+
       {/* Start evaluation */}
       <button className="start-btn" onClick={startEvaluation}>
         Start Evaluation
