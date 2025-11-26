@@ -8,7 +8,12 @@ export default function WebSocketBox() {
   const boxRef = useRef(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3000");
+    // === ✅ 自动切换本地 / 线上 WebSocket URL ===
+    const WS_URL =
+    window.location.hostname === "localhost"
+       ? "ws://localhost:3000/ws"
+       : "wss://four020project.onrender.com/ws";
+    const ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
       setMessages((prev) => [...prev, "📡 WebSocket connected"]);
@@ -18,12 +23,14 @@ export default function WebSocketBox() {
       try {
         const msg = JSON.parse(event.data);
 
-        if (msg.done) {
+        if (msg.status === "done") {
           setMessages((prev) => [...prev, "✅ Evaluation finished"]);
         } else {
           setMessages((prev) => [
             ...prev,
-            `📘 ${msg.domain}: "${msg.question}" → ${msg.answer} (${msg.responseTime} ms)`
+            `📘 ${msg.domain}: "${msg.question}" → ${
+              msg.answer
+            } (${msg.responseTime} ms)`
           ]);
         }
       } catch (err) {

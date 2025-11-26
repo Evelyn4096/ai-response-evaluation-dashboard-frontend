@@ -3,6 +3,12 @@ import Chart from "chart.js/auto";
 import WebSocketBox from "../components/WebSocketBox";
 import "./Project.css";
 
+// === Auto select local / Render backend ===
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : "https://four020project.onrender.com";
+
 export default function Project() {
   const [stats, setStats] = useState([]);
   const [status, setStatus] = useState("");
@@ -26,7 +32,7 @@ export default function Project() {
   // ----------------------------
   async function fetchStats() {
     try {
-      const res = await fetch("http://localhost:3000/api/analysis");
+      const res = await fetch(`${API_BASE}/api/analysis`);
       const data = await res.json();
       setStats(data);
     } catch (err) {
@@ -42,11 +48,12 @@ export default function Project() {
   // KPI values
   // ----------------------------
   const totalQuestions = stats.reduce((sum, s) => sum + (s.count || 0), 0);
+
   const overallAccuracy =
     stats.length === 0
       ? 0
       : stats.reduce((sum, s) => sum + s.accuracy * s.count, 0) /
-        totalQuestions || 0;
+          totalQuestions || 0;
 
   const fastestDomain =
     stats.length === 0
@@ -81,7 +88,6 @@ export default function Project() {
     if (domainShareChart.current) domainShareChart.current.destroy();
     if (scatterChart.current) scatterChart.current.destroy();
 
-    // --- Accuracy Bar Chart ---
     accuracyChart.current = new Chart(accuracyRef.current, {
       type: "bar",
       data: {
@@ -100,7 +106,6 @@ export default function Project() {
       },
     });
 
-    // --- Response Time Line Chart ---
     timeChart.current = new Chart(timeRef.current, {
       type: "line",
       data: {
@@ -121,20 +126,13 @@ export default function Project() {
       },
     });
 
-    // --- Correct vs Incorrect (Stacked Bar) ---
     correctWrongChart.current = new Chart(correctWrongRef.current, {
       type: "bar",
       data: {
         labels: domains,
         datasets: [
-          {
-            label: "Correct Answers",
-            data: correctCounts,
-          },
-          {
-            label: "Incorrect Answers",
-            data: incorrectCounts,
-          },
+          { label: "Correct", data: correctCounts },
+          { label: "Incorrect", data: incorrectCounts },
         ],
       },
       options: {
@@ -146,7 +144,6 @@ export default function Project() {
       },
     });
 
-    // --- Domain Question Share (Doughnut) ---
     domainShareChart.current = new Chart(domainShareRef.current, {
       type: "doughnut",
       data: {
@@ -158,12 +155,8 @@ export default function Project() {
           },
         ],
       },
-      options: {
-        responsive: true,
-      },
     });
 
-    // --- Accuracy vs Response Time (Scatter) ---
     scatterChart.current = new Chart(scatterRef.current, {
       type: "scatter",
       data: {
@@ -195,7 +188,7 @@ export default function Project() {
     setStatus("Starting evaluation...");
 
     try {
-      const res = await fetch("http://localhost:3000/api/evaluations/start", {
+      const res = await fetch(`${API_BASE}/api/evaluations/start`, {
         method: "POST",
       });
       const data = await res.json();
@@ -210,7 +203,6 @@ export default function Project() {
     <div className="project-page">
       <h1>Gemini Evaluation Dashboard</h1>
 
-      {/* KPI SUMMARY */}
       <div className="kpi-row">
         <div className="kpi-card">
           <h3>Total Questions</h3>
@@ -232,67 +224,37 @@ export default function Project() {
         </div>
       </div>
 
-      {/* KPI SUMMARY */}
-      <div className="kpi-row">
-        <div className="kpi-card">
-          <h3>Total Questions</h3>
-          <p>{totalQuestions}</p>
-        </div>
-        <div className="kpi-card">
-          <h3>Overall Accuracy</h3>
-          <p>{(overallAccuracy * 100).toFixed(1)}%</p>
-        </div>
-        <div className="kpi-card">
-          <h3>Fastest Domain</h3>
-          <p>
-            {fastestDomain
-              ? `${fastestDomain.domain} (${Math.round(
-                  fastestDomain.avgResponseTime
-                )} ms)`
-              : "—"}
-          </p>
-        </div>
-      </div>
-
-      {/* Start evaluation */}
       <button className="start-btn" onClick={startEvaluation}>
         Start Evaluation
       </button>
       <p className="status-text">{status}</p>
 
-      {/* WebSocket Real-time Log */}
       <h2>Live Evaluation Progress</h2>
       <WebSocketBox />
 
-      {/* RESULTS SECTION */}
       <h2>Results</h2>
 
       <div className="dashboard-grid">
-        {/* Accuracy Chart */}
         <div className="chart-section">
           <h3>Accuracy per Domain</h3>
           <canvas ref={accuracyRef} height={240}></canvas>
         </div>
 
-        {/* Response Time Chart */}
         <div className="chart-section">
           <h3>Avg Response Time per Domain</h3>
           <canvas ref={timeRef} height={240}></canvas>
         </div>
 
-        {/* Correct vs Incorrect */}
         <div className="chart-section">
           <h3>Correct vs Incorrect per Domain</h3>
           <canvas ref={correctWrongRef} height={260}></canvas>
         </div>
 
-        {/* Domain Question Share */}
         <div className="chart-section">
           <h3>Question Distribution by Domain</h3>
           <canvas ref={domainShareRef} height={260}></canvas>
         </div>
 
-        {/* Scatter: Accuracy vs Time */}
         <div className="chart-section">
           <h3>Accuracy vs Response Time</h3>
           <canvas ref={scatterRef} height={260}></canvas>
