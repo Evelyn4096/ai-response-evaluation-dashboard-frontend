@@ -7,13 +7,19 @@ export default function Project() {
   const [stats, setStats] = useState([]);
   const [status, setStatus] = useState("");
 
+  // Chart canvas refs
   const accuracyRef = useRef(null);
   const timeRef = useRef(null);
-  const combinedRef = useRef(null);
+  const correctWrongRef = useRef(null);
+  const domainShareRef = useRef(null);
+  const scatterRef = useRef(null);
 
+  // Chart instances
   const accuracyChart = useRef(null);
   const timeChart = useRef(null);
-  const combinedChart = useRef(null);
+  const correctWrongChart = useRef(null);
+  const domainShareChart = useRef(null);
+  const scatterChart = useRef(null);
 
   // ----------------------------
   // Fetch analysis stats
@@ -33,19 +39,47 @@ export default function Project() {
   }, []);
 
   // ----------------------------
+  // KPI values
+  // ----------------------------
+  const totalQuestions = stats.reduce((sum, s) => sum + (s.count || 0), 0);
+  const overallAccuracy =
+    stats.length === 0
+      ? 0
+      : stats.reduce((sum, s) => sum + s.accuracy * s.count, 0) /
+        totalQuestions || 0;
+
+  const fastestDomain =
+    stats.length === 0
+      ? null
+      : stats.reduce(
+          (best, s) =>
+            !best || s.avgResponseTime < best.avgResponseTime ? s : best,
+          null
+        );
+
+  // ----------------------------
   // Render Charts When stats Change
   // ----------------------------
   useEffect(() => {
     if (stats.length === 0) return;
 
-    const domains = stats.map(s => s.domain);
-    const accuracies = stats.map(s => s.accuracy);
-    const responseTimes = stats.map(s => s.avgResponseTime);
+    const domains = stats.map((s) => s.domain);
+    const accuracies = stats.map((s) => s.accuracy);
+    const responseTimes = stats.map((s) => s.avgResponseTime);
+    const counts = stats.map((s) => s.count || 0);
+    const correctCounts = stats.map((s) =>
+      Math.round(s.accuracy * (s.count || 0))
+    );
+    const incorrectCounts = stats.map(
+      (s, i) => (s.count || 0) - correctCounts[i]
+    );
 
-    // Destroy old charts first
+    // Destroy old charts
     if (accuracyChart.current) accuracyChart.current.destroy();
     if (timeChart.current) timeChart.current.destroy();
-    if (combinedChart.current) combinedChart.current.destroy();
+    if (correctWrongChart.current) correctWrongChart.current.destroy();
+    if (domainShareChart.current) domainShareChart.current.destroy();
+    if (scatterChart.current) scatterChart.current.destroy();
 
     // --- Accuracy Bar Chart ---
     accuracyChart.current = new Chart(accuracyRef.current, {
@@ -54,9 +88,8 @@ export default function Project() {
         labels: domains,
         datasets: [
           {
-            label: "Accuracy (0~1)",
+            label: "Accuracy (0–1)",
             data: accuracies,
-            backgroundColor: "rgba(75, 192, 192, 0.7)",
           },
         ],
       },
@@ -88,40 +121,72 @@ export default function Project() {
       },
     });
 
-    // --- Combined Summary Dashboard ---
-    combinedChart.current = new Chart(combinedRef.current, {
-      type: "radar",
+    // --- Correct vs Incorrect (Stacked Bar) ---
+    correctWrongChart.current = new Chart(correctWrongRef.current, {
+      type: "bar",
       data: {
         labels: domains,
         datasets: [
           {
-            label: "Accuracy",
-            data: accuracies,
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderColor: "rgb(54, 162, 235)",
-            borderWidth: 2,
+            label: "Correct Answers",
+            data: correctCounts,
           },
           {
-            label: "Response Time (scaled 0-1)",
-            data: responseTimes.map(t => t / Math.max(...responseTimes)),
-            backgroundColor: "rgba(255, 99, 132, 0.2)",
-            borderColor: "rgb(255, 99, 132)",
-            borderWidth: 2,
-          }
+            label: "Incorrect Answers",
+            data: incorrectCounts,
+          },
         ],
       },
       options: {
+        responsive: true,
         scales: {
-          r: {
-            beginAtZero: true,
-            max: 1
-          }
-        }
-      }
+          x: { stacked: true },
+          y: { beginAtZero: true, stacked: true },
+        },
+      },
     });
 
-  }, [stats]);
+    // --- Domain Question Share (Doughnut) ---
+    domainShareChart.current = new Chart(domainShareRef.current, {
+      type: "doughnut",
+      data: {
+        labels: domains,
+        datasets: [
+          {
+            label: "Question Count",
+            data: counts,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+      },
+    });
 
+    // --- Accuracy vs Response Time (Scatter) ---
+    scatterChart.current = new Chart(scatterRef.current, {
+      type: "scatter",
+      data: {
+        datasets: stats.map((s) => ({
+          label: s.domain,
+          data: [{ x: s.avgResponseTime, y: s.accuracy }],
+        })),
+      },
+      options: {
+        scales: {
+          x: {
+            title: { display: true, text: "Avg Response Time (ms)" },
+            beginAtZero: true,
+          },
+          y: {
+            title: { display: true, text: "Accuracy (0–1)" },
+            beginAtZero: true,
+            max: 1,
+          },
+        },
+      },
+    });
+  }, [stats]);
 
   // ----------------------------
   // Start Evaluation (POST)
@@ -145,11 +210,32 @@ export default function Project() {
     <div className="project-page">
       <h1>ChatGPT Evaluation Dashboard</h1>
 
+      {/* KPI SUMMARY */}
+      <div className="kpi-row">
+        <div className="kpi-card">
+          <h3>Total Questions</h3>
+          <p>{totalQuestions}</p>
+        </div>
+        <div className="kpi-card">
+          <h3>Overall Accuracy</h3>
+          <p>{(overallAccuracy * 100).toFixed(1)}%</p>
+        </div>
+        <div className="kpi-card">
+          <h3>Fastest Domain</h3>
+          <p>
+            {fastestDomain
+              ? `${fastestDomain.domain} (${Math.round(
+                  fastestDomain.avgResponseTime
+                )} ms)`
+              : "—"}
+          </p>
+        </div>
+      </div>
+
       {/* Start evaluation */}
       <button className="start-btn" onClick={startEvaluation}>
         Start Evaluation
       </button>
-
       <p className="status-text">{status}</p>
 
       {/* WebSocket Real-time Log */}
@@ -158,26 +244,37 @@ export default function Project() {
 
       {/* RESULTS SECTION */}
       <h2>Results</h2>
-      <p>
-        Below are the evaluation results including accuracy, response time, and a combined summary dashboard.
-      </p>
 
-      {/* Accuracy Chart */}
-      <div className="chart-section">
-        <h3>Accuracy per Domain</h3>
-        <canvas ref={accuracyRef} height={260}></canvas>
-      </div>
+      <div className="dashboard-grid">
+        {/* Accuracy Chart */}
+        <div className="chart-section">
+          <h3>Accuracy per Domain</h3>
+          <canvas ref={accuracyRef} height={240}></canvas>
+        </div>
 
-      {/* Response Time Chart */}
-      <div className="chart-section">
-        <h3>Avg Response Time per Domain</h3>
-        <canvas ref={timeRef} height={260}></canvas>
-      </div>
+        {/* Response Time Chart */}
+        <div className="chart-section">
+          <h3>Avg Response Time per Domain</h3>
+          <canvas ref={timeRef} height={240}></canvas>
+        </div>
 
-      {/* Combined Summary (Radar) */}
-      <div className="chart-section">
-        <h3>Combined Summary Dashboard</h3>
-        <canvas ref={combinedRef} height={300}></canvas>
+        {/* Correct vs Incorrect */}
+        <div className="chart-section">
+          <h3>Correct vs Incorrect per Domain</h3>
+          <canvas ref={correctWrongRef} height={260}></canvas>
+        </div>
+
+        {/* Domain Question Share */}
+        <div className="chart-section">
+          <h3>Question Distribution by Domain</h3>
+          <canvas ref={domainShareRef} height={260}></canvas>
+        </div>
+
+        {/* Scatter: Accuracy vs Time */}
+        <div className="chart-section">
+          <h3>Accuracy vs Response Time</h3>
+          <canvas ref={scatterRef} height={260}></canvas>
+        </div>
       </div>
 
       <button className="refresh-btn" onClick={fetchStats}>
