@@ -31,6 +31,15 @@ const API_BASE =
     ? "http://localhost:5000"
     : "https://four020project.onrender.com";
 
+const COLOR_PALETTE = [
+  "#5561d4",
+  "#ff6384",
+  "#36a2eb",
+  "#4bc0c0",
+  "#ffcd56",
+  "#9966ff"
+];
+
 /* ============================
    SMALL INLINE COMPONENTS
 ============================ */
@@ -188,15 +197,17 @@ export default function Project() {
   );
 
   const scatterData = useMemo(
-    () => ({
-      datasets: stats.map((s) => ({
-        label: s.domain,
-        data: [{ x: s.avgResponseTime, y: s.accuracy }],
-        backgroundColor: "#5561d4"
-      }))
-    }),
-    [stats]
-  );
+  () => ({
+    datasets: stats.map((s, idx) => ({
+      label: s.domain,
+      data: [{ x: s.avgResponseTime, y: s.accuracy }],
+      backgroundColor: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+      pointRadius: 6,
+      pointHoverRadius: 8
+    }))
+  }),
+  [stats]
+);
 
   /* ----------------------------
      CONTROL BUTTON ACTIONS
