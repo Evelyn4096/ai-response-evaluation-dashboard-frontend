@@ -4,7 +4,7 @@ export default function Home() {
       
       {/* Header Section */}
       <div className="home-header">
-        <h1 className="title">E & A's Portfolio</h1>
+        <h1 className="title">Evelyn's Portfolio</h1>
       </div>
 
       {/* Intro Section */}
