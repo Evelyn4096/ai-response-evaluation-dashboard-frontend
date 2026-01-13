@@ -2,8 +2,8 @@ import React from "react";
 
 function CV() {
   return (
-    <div className="cv-page
-      <section>
+    <div className="cv-page">
+    <section>
       <h1>Profile</h1>
       <h2>Tianzhuo li</h2>
         <p>I’m an Information Technology student at York University with a strong focus on full-stack development,
