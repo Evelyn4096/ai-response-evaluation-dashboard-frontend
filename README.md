@@ -41,20 +41,20 @@ src/
 ├── App.jsx            # Application entry
 ├── main.jsx           # React bootstrap
 
-Deployment
+## Deployment
 
 The frontend is deployed on Render:
 
 👉 Live Demo:
 https://evelyn4096-github-io.onrender.com
 
-Backend Integration
+## Backend Integration
 
 This frontend communicates with a separate backend service via REST APIs.
 
 Backend repository:
 https://github.com/Evelyn4096/ai-response-evaluation-dashboard-backend
 
-Notes
+## Notes
 
 This project is part of an academic and personal portfolio, emphasizing system design, frontend–backend separation, and applied AI evaluation, rather than model training.
