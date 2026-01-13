@@ -2,23 +2,23 @@
 
 This repository contains the frontend implementation of the **AI Response Evaluation Dashboard**, a web-based system for visualizing and analyzing the performance of AI-generated responses across multiple domains.
 
-The frontend focuses on **user interaction and data visualization**, providing real-time control over the evaluation process and intuitive insight into accuracy and response-time metrics.
+The frontend emphasizes **user interaction and data visualization**, providing real-time control over the evaluation process and intuitive insights into accuracy and response-time metrics.
 
 ---
 
 ## Features
 
-- Interactive dashboard displaying:
+- **Interactive dashboard** displaying:
   - Total evaluated questions
   - Overall accuracy
   - Fastest response domain
-- Real-time evaluation controls:
+- **Real-time evaluation controls**:
   - Start, pause, resume, and reset
-- Visualization of evaluation results:
+- **Result visualizations**:
   - Accuracy per domain
   - Correct vs. incorrect distribution
-  - Accuracy vs. response time trade-offs
-- Responsive, component-based UI
+  - Accuracy vs. response-time trade-offs
+- **Responsive, component-based UI**
 
 ---
 
@@ -39,9 +39,8 @@ src/
 ├── components/        # Reusable UI components
 ├── pages/             # Page-level components (Home, CV, Project)
 ├── App.jsx            # Application entry
-├── main.jsx           # React bootstrap
-
----
+└── main.jsx           # React bootstrap
+```
 
 ## Deployment
 
