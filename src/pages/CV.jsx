@@ -5,7 +5,7 @@ function CV() {
     <div className="cv-page">
     <section>
       <h1>Profile</h1>
-      <h2>Tianzhuo li</h2>
+      <h2>Tianzhuo Li</h2>
         <p>I’m an Information Technology student at York University with a strong focus on full-stack development,
   system design, and AI-driven applications. I enjoy building practical and user-centered tools, from
   evaluation platforms powered by real-time data to interactive game systems and cloud-based services.</p>
