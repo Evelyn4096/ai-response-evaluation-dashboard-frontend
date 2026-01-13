@@ -1,16 +1,60 @@
-# React + Vite
+# AI Response Evaluation Dashboard – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository contains the frontend implementation of the **AI Response Evaluation Dashboard**, a web-based system for visualizing and analyzing the performance of AI-generated responses across multiple domains.
 
-Currently, two official plugins are available:
+The frontend focuses on **user interaction and data visualization**, providing real-time control over the evaluation process and intuitive insight into accuracy and response-time metrics.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Interactive dashboard displaying:
+  - Total evaluated questions
+  - Overall accuracy
+  - Fastest response domain
+- Real-time evaluation controls:
+  - Start, pause, resume, and reset
+- Visualization of evaluation results:
+  - Accuracy per domain
+  - Correct vs. incorrect distribution
+  - Accuracy vs. response time trade-offs
+- Responsive, component-based UI
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tech Stack
+
+- **React**
+- **JavaScript (ES6+)**
+- **Vite**
+- **Chart.js**
+- **CSS**
+
+---
+
+## Project Structure
+
+```text
+src/
+├── components/        # Reusable UI components
+├── pages/             # Page-level components (Home, CV, Project)
+├── App.jsx            # Application entry
+├── main.jsx           # React bootstrap
+
+Deployment
+
+The frontend is deployed on Render:
+
+👉 Live Demo:
+https://evelyn4096-github-io.onrender.com
+
+Backend Integration
+
+This frontend communicates with a separate backend service via REST APIs.
+
+Backend repository:
+https://github.com/Evelyn4096/ai-response-evaluation-dashboard-backend
+
+Notes
+
+This project is part of an academic and personal portfolio, emphasizing system design, frontend–backend separation, and applied AI evaluation, rather than model training.
